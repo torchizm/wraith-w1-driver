@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+/* ── Tailwind design tokens (dark mode defaults) ─────────────────────────── */
+@theme {
+  --color-bg-primary:     #0f0a1a;
+  --color-bg-secondary:   #1a1228;
+  --color-bg-tertiary:    #221a33;
+  --color-border-default: #3a1f6e;
+  --color-border-light:   #2d1a5a;
+  --color-text-primary:   #f0eaf8;
+  --color-text-secondary: #9b8ac4;
+  --color-text-muted:     #5c4f7c;
+  --color-accent-purple:  #803cee;
+  --color-accent-gold:    #ffcc0e;
+  --color-accent-red:     #ef4444;
+  --color-accent-cyan:    #22d3ee;
+  --color-accent-orange:  #f97316;
+  --color-accent-green:   #22c55e;
+}
+
+/* ── Light mode variable overrides ───────────────────────────────────────── */
+/* Tailwind utility classes reference var(--color-*), so these cascade in.   */
+[data-theme="light"] {
+  --color-bg-primary:     #f0f0f0;
+  --color-bg-secondary:   #ffffff;
+  --color-bg-tertiary:    #e8e8f0;
+  --color-border-default: #d4c4f5;
+  --color-border-light:   #e8e0fa;
+  --color-text-primary:   #1a1a1a;
+  --color-text-secondary: #555555;
+  --color-text-muted:     #999999;
+}
+
+/* ── Base styles ─────────────────────────────────────────────────────────── */
+body {
+  margin: 0;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: 'Poppins', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-size: 13px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--color-border-default); border-radius: 3px; }
+
+/* ── Font aliases ───────────────────────────────────────────────────────── */
+.font-display {
+  font-family: system-ui, sans-serif;
+  font-weight: 700;
+}
+.font-data {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+
+/* ── HUD card ───────────────────────────────────────────────────────────── */
+.hud-card {
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+}
+
+/* ── Toast clip ─────────────────────────────────────────────────────────── */
+.toast-clip {
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+}

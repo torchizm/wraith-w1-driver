@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-web:
+    name: Build Web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: packages/web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: packages/web
+        run: npm ci
+
+      - name: Build
+        working-directory: packages/web
+        run: npm run build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: packages/web/dist/
+          retention-days: 7
+
+  build-win32:
+    name: Build Windows Daemon
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/win32
+
+      - name: Build
+        working-directory: packages/win32
+        run: cargo build --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wraith-daemon-windows
+          path: packages/win32/target/release/wraith-daemon.exe
+          retention-days: 7
+
+  build-darwin:
+    name: Build macOS Daemon
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and stage binary
+        working-directory: packages/darwin
+        run: |
+          swift build --product WraithDaemon -c release
+          BIN_PATH=$(swift build --product WraithDaemon -c release --show-bin-path)
+          cp "$BIN_PATH/WraithDaemon" /tmp/WraithDaemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wraith-daemon-macos
+          path: /tmp/WraithDaemon
+          retention-days: 7

@@ -1,0 +1,96 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-win32:
+    name: Build Windows Daemon
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/win32
+
+      - name: Build
+        working-directory: packages/win32
+        run: cargo build --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wraith-daemon-windows
+          path: packages/win32/target/release/wraith-daemon.exe
+
+  build-darwin:
+    name: Build macOS Daemon
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and stage binary
+        working-directory: packages/darwin
+        run: |
+          swift build --product WraithDaemon -c release
+          BIN_PATH=$(swift build --product WraithDaemon -c release --show-bin-path)
+          cp "$BIN_PATH/WraithDaemon" /tmp/WraithDaemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wraith-daemon-macos
+          path: /tmp/WraithDaemon
+
+  release-and-docker:
+    name: Publish Release & Docker
+    runs-on: ubuntu-latest
+    needs: [build-win32, build-darwin]
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: wraith-daemon-windows
+          path: artifacts/windows/
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: wraith-daemon-macos
+          path: artifacts/macos/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/windows/wraith-daemon.exe
+            artifacts/macos/WraithDaemon
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: packages/web
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            torchizm/w1-driver:latest
+            torchizm/w1-driver:${{ github.ref_name }}

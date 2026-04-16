@@ -1,0 +1,27 @@
+# Swift (Darwin package)
+packages/darwin/.build/
+packages/darwin/.swiftpm/
+packages/darwin/Package.resolved
+
+# Node (web package)
+packages/web/node_modules/
+packages/web/dist/
+packages/web/.vite/
+
+# Rust (win32 package)
+packages/win32/target/
+*.pdb
+
+# macOS
+.DS_Store
+*.xcodeproj
+*.xcworkspace
+
+# IDE
+.idea/
+.vscode/
+
+# Debug tools
+hid_monitor
+hid_raw_monitor
+*.o
